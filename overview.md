@@ -181,3 +181,70 @@ La cobertura validada comienza en cero hasta confirmar relaciones. **Esto no pru
 Se validó la instantánea y el cálculo contra el modelo de la demo: 23 pruebas de estructura/reglas con fixtures y 11 pruebas sobre datos reales, incluidas 165 combinaciones proyecto–capacidad–mes. La extracción registró 690 valores brutos mensuales y conservación de los archivos XLSX, con evidencia en [extraction-report.md](prototype/extraction-report.md). Las pruebas DOM del navegador verifican el recorrido y las mutaciones simuladas; no sustituyen una prueba de uso con METH.
 
 El HTML distribuido está preparado y abre sin instalación. **La reextracción mediante el script PowerShell está bloqueada por la política de ejecución del entorno**; no se modificó esa política. La instantánea ya generada y la reconstrucción/verificación con Node funcionan. Esto afecta la actualización técnica de datos, no la apertura del prototipo para presentar.
+
+## Iteración 3 · Vista en paralelo, gráficos, PDF y acciones por proyecto — 2026-11-03
+
+Esta iteración ajusta la demo a partir del feedback recibido, sin cambiar los puntajes originales. La [demo actual](prototype/index.html) conserva el recorrido macro → micro e incorpora comparación y exportación de vistas.
+
+### Listado de proyectos
+
+- **Excluir FedPat PNC y PC del prototipo**. Sus hojas originales permanecen intactas en el Excel.
+- **Incorporar Galicia, Santander y Master Bapro en blanco**, sin archivo fuente ni puntajes. Sus cuentas homónimas son una agrupación provisional para la demo.
+- La vista representa **12 proyectos: nueve con evaluaciones y tres pendientes**. Los pendientes no entran al promedio ni se muestran en rojo por ausencia de datos.
+- El semáforo de septiembre conserva **56,6 % / 76,2 % / 49,1 %**, ahora con cobertura **9/12 proyectos**. Cambiar el listado no altera la evaluación de las prácticas ya medidas.
+
+### Tortas en el panorama
+
+Cada capacidad se representa con dos sectores: **cumplimiento normalizado** y **porcentaje restante de la escala**. Ejemplo: capacidad 1, **56,6 % frente a 43,4 %**. No se presenta como proporción de indicadores verdes ni como tareas completadas/pendientes. Los datos ausentes se muestran como **Sin evaluación**, sin convertirlos en 0 %.
+
+### Proyectos en paralelo
+
+**Decisión de lenguaje:** METH eligió «Ver en paralelo» para evitar una lectura de competencia o ranking. El menú dice «Vista en paralelo», el botón «Ver en paralelo» y el título «Proyectos en paralelo». La selección y los cálculos no cambian.
+
+Desde los aportes de una capacidad se seleccionan **exactamente dos proyectos**. La comparación alinea los mismos indicadores por criterio, en el mismo mes. Se puede filtrar por alertas de cualquiera de los dos, sin ocultar la contraparte ni recalcular promedios.
+
+Ejemplo en capacidad 1 de septiembre:
+
+| Métrica | FedPat CRM | FedPat MARS |
+|---|---:|---:|
+| Capacidad 1 | 🔴 18,5 % | 🟡 57,4 % |
+| 1.1 Madurez y Gestión del Backlog | 🔴 22,2 % | 🟡 61,1 % |
+| 1.2 Planificación Evolutiva y Feedback | 🔴 22,2 % | 🟢 88,9 % |
+| 1.3 Cultura de Producto e Impacto | 🔴 11,1 % | 🔴 22,2 % |
+
+Se permite comparar con un proyecto pendiente: su columna queda sin evaluación, no con un puntaje artificial. Un tercer proyecto no reemplaza una selección silenciosamente.
+
+### Acciones: corregir la lectura del indicador principal
+
+El feedback revela que mostrar «0 alertas con acción confirmada» podía ocultar que **ya existen acciones activas**, aunque no haya relaciones formales con los indicadores. La métrica principal pasa a ser **cantidad de acciones activas del proyecto**, sin exigir vínculo con capacidad, criterio ni indicador.
+
+| Proyecto identificado en el archivo de acciones | Acciones activas |
+|---|---:|
+| FedPat · MARS | **1** |
+| Medifé · Portal de prestadores | **4** |
+| RIG · Website Redesign | **3** |
+| Sin proyecto identificado (origen RR) | **2** |
+| Total de activas en el archivo | **10** |
+
+- Activas: New, To Do y Doing. Done y Cancelled se conservan, pero no cuentan.
+- Se deduplican los IDs; una acción con varias sugerencias no se cuenta varias veces para un proyecto.
+- **Las sugerencias múltiples siguen siendo útiles**, pero no demuestran cobertura efectiva de una práctica. #39272 propone indicadores 17 y 10; #39777 propone 2 y 3.
+- Cero significa «no hay acciones activas identificadas para este proyecto en este archivo», no que no exista un plan fuera del archivo.
+- Los estados siguen siendo la instantánea actual, no un histórico del mes evaluado. Cambiar una acción a Done en la simulación cambia su contador, **no su puntaje de práctica**.
+
+### PDF
+
+Se prepara la **vista actual** para imprimir y guardar como PDF desde el navegador, incluida la comparación de dos proyectos. El flujo no necesita Internet ni servicios externos: **Exportar vista a PDF → Guardar como PDF → elegir nombre y destino**. El diálogo exige confirmación de la persona; cancelar no equivale a exportación exitosa.
+
+La versión de lectura conserva contexto de mes/alcance y las advertencias, sin controles de edición. El PDF no resuelve permisos ni publica la información: debe compartirse solo con personas autorizadas.
+
+### Insights para la próxima validación
+
+1. **Separar cantidad, cobertura y efectividad:** tener acciones activas no demuestra que atiendan un indicador, y cerrar una tarea no demuestra mejora de madurez.
+2. **Comparar prácticas, no solo porcentajes globales:** la lectura lado a lado permite observar diferencias de criterio y de aplicabilidad.
+3. **Visibilizar pendientes sin penalizarlos:** los tres proyectos nuevos están incluidos para planificar evaluación, no para bajar artificialmente el macro.
+4. **Exportar con contexto:** el informe necesita mes, alcance y advertencias de año para no circular como una medición definitiva.
+
+### Verificación y trazabilidad
+
+Las nueve fuentes evaluadas, el catálogo y las doce acciones se compararon con la versión Git anterior y permanecen idénticos. Se observó primero una prueba fallando por el listado anterior antes de actualizar el roster. La nueva validación, comparación, gráficos y preparación de PDF se documentan en [validation-results.md](prototype/validation-results.md). No se modifican los Excel ni se publica una aplicación productiva. La verificación final de esta iteración registra **45 pruebas automatizadas PASS**, 180 combinaciones proyecto–capacidad–mes, recorrido DOM y capturas de escritorio. Se comprobó la copia imprimible del panorama y de la comparación; guardar el PDF sigue requiriendo confirmación en el diálogo del navegador.

@@ -1,5 +1,5 @@
 {
-    "generatedAt":  "2026-11-02",
+    "generatedAt":  "2026-11-03",
     "months":  [
                    {
                        "id":  "07",
@@ -4033,32 +4033,34 @@
                                   ]
                      },
                      {
-                         "id":  "fedpat-pnc",
-                         "account":  "FedPat",
-                         "name":  "PNC",
-                         "file":  "FedPat - Indicadores Prácticas 2026.xlsx",
+                         "id":  "galicia",
+                         "account":  "Galicia",
+                         "name":  "Galicia",
+                         "file":  null,
                          "sheet":  null,
                          "hasNew":  false,
-                         "periodSources":  [
-
-                                           ],
-                         "rows":  [
-
-                                  ]
+                         "periodSources":  [],
+                         "rows":  []
                      },
                      {
-                         "id":  "fedpat-pc",
-                         "account":  "FedPat",
-                         "name":  "PC",
-                         "file":  "FedPat - Indicadores Prácticas 2026.xlsx",
+                         "id":  "santander",
+                         "account":  "Santander",
+                         "name":  "Santander",
+                         "file":  null,
                          "sheet":  null,
                          "hasNew":  false,
-                         "periodSources":  [
-
-                                           ],
-                         "rows":  [
-
-                                  ]
+                         "periodSources":  [],
+                         "rows":  []
+                     },
+                     {
+                         "id":  "master-bapro",
+                         "account":  "Master Bapro",
+                         "name":  "Master Bapro",
+                         "file":  null,
+                         "sheet":  null,
+                         "hasNew":  false,
+                         "periodSources":  [],
+                         "rows":  []
                      }
                  ],
     "actions":  [
@@ -4411,13 +4413,18 @@
                      },
                      {
                          "kind":  "source",
-                         "projectId":  "fedpat-pnc",
-                         "message":  "No existe hoja METH NUEVO con F1=Indicador para este proyecto. Se conserva sin filas, sin puntajes y sin arrastrar el METH anterior."
+                         "projectId":  "galicia",
+                         "message":  "Proyecto incorporado por solicitud de METH, pendiente de evaluación. No se dispone de archivo fuente ni puntuaciones; no se imputa cero."
                      },
                      {
                          "kind":  "source",
-                         "projectId":  "fedpat-pc",
-                         "message":  "No existe hoja METH NUEVO con F1=Indicador para este proyecto. Se conserva sin filas, sin puntajes y sin arrastrar el METH anterior."
+                         "projectId":  "santander",
+                         "message":  "Proyecto incorporado por solicitud de METH, pendiente de evaluación. No se dispone de archivo fuente ni puntuaciones; no se imputa cero."
+                     },
+                     {
+                         "kind":  "source",
+                         "projectId":  "master-bapro",
+                         "message":  "Proyecto incorporado por solicitud de METH, pendiente de evaluación. No se dispone de archivo fuente ni puntuaciones; no se imputa cero."
                      },
                      {
                          "kind":  "mapping",

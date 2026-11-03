@@ -1,4 +1,6 @@
-# Evidencia de extracción XLSX — 2026-11-02
+# Evidencia de extracción XLSX — 2026-11-02 (registro histórico)
+
+> **Iteración 3 · 2026-11-03:** las nueve fuentes evaluadas, sus 207 filas y las doce acciones permanecen idénticas a la versión Git anterior. El snapshot actual reemplaza PNC/PC por Galicia, Santander y Master Bapro sin evaluación, y actualiza la fecha de armado y las advertencias. Este informe conserva los conteos y hashes del momento de extracción; no afirma una nueva reextracción. El generador se actualizó para reproducir el nuevo roster cuando su ejecución esté autorizada. Los resultados actuales están en `overview.md` y `validation-results.md`.
 
 Reproducir desde la raíz: `& .\prototype\extract-data.ps1`. Si la política de ejecución impide scripts, informar el bloqueo sin modificarla. PowerShell ZIP/XML y .NET, sin Python, módulos externos ni Excel instalado. Lee archivos en modo ZIP read-only. Salida UTF-8 sin BOM. Fecha de snapshot fijada por contrato; no es una fecha inferida de los datos.
 

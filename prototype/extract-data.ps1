@@ -235,11 +235,11 @@ foreach ($book in $books) {
         $projectSheets[$projectId] = $sheet
     }
 }
-$fedpatFile = ($books | Where-Object { $_.file.StartsWith('FedPat') }).file
-foreach ($missing in @('pnc', 'pc')) {
-    $projectId = 'fedpat-' + $missing
-    $projects += [pscustomobject]@{ id = $projectId; account = 'FedPat'; name = $missing.ToUpperInvariant(); file = $fedpatFile; sheet = $null; hasNew = $false; periodSources = @(); rows = @() }
-    Warn 'source' $projectId 'No existe hoja METH NUEVO con F1=Indicador para este proyecto. Se conserva sin filas, sin puntajes y sin arrastrar el METH anterior.'
+# Requested roster for iteration 3: PNC/PC are excluded from the demo, not deleted from XLSX.
+# New projects have no source or evaluation; never populate them with zero or synthetic scores.
+foreach ($pending in @(@{ id = 'galicia'; name = 'Galicia' }, @{ id = 'santander'; name = 'Santander' }, @{ id = 'master-bapro'; name = 'Master Bapro' })) {
+    $projects += [pscustomobject]@{ id = $pending.id; account = $pending.name; name = $pending.name; file = $null; sheet = $null; hasNew = $false; periodSources = @(); rows = @() }
+    Warn 'source' $pending.id 'Proyecto incorporado por solicitud de METH, pendiente de evaluación. No se dispone de archivo fuente ni puntuaciones; no se imputa cero.'
 }
 # Evidence for the tentative website-redesign -> RIG mapping, never a scoring source.
 $rigBook = $books | Where-Object { $_.file.StartsWith('RIG') }
@@ -296,10 +296,10 @@ foreach ($sheet in $actionBook.sheets) {
 Warn 'mapping' $null 'Todas las relaciones acción-proyecto e indicador son inferencias propuestas (suggested), por confirmar. website-redesign se sugiere para RIG por evidencia del Meth antiguo, sin usar sus puntajes.'
 if (@($actions | Where-Object { $null -ne $_.url }).Count -eq 0) { Warn 'source' $null 'El XLSX de acciones no contiene URLs explícitas ni relaciones hyperlink externas: las 12 acciones conservan url=null. No se inventan enlaces Redmine a partir del ID.' }
 if (@($projects | Where-Object hasNew).Count -ne 9) { throw 'Expected 9 new-methodology sources.' }
-if (($projects.account | Sort-Object -Unique).Count -ne 8) { throw 'Expected 8 accounts.' }
+if (($projects.account | Sort-Object -Unique).Count -ne 11 -or $projects.Count -ne 12) { throw 'Expected 11 represented accounts and 12 projects, including three pending evaluations.' }
 if ($actions.Count -ne 12) { throw ('Expected 12 actions, got ' + $actions.Count) }
 if ($capacities.Count -ne 3 -or $criteria.Count -ne 8 -or $indicators.Count -ne 23) { throw 'Unexpected catalog size.' }
-$snapshot = [ordered]@{ generatedAt = '2026-11-02'; months = $months; capacities = $capacities; criteria = $criteria; indicators = $indicators; projects = $projects; actions = $actions; warnings = @($warnings.ToArray()) }
+$snapshot = [ordered]@{ generatedAt = '2026-11-03'; months = $months; capacities = $capacities; criteria = $criteria; indicators = $indicators; projects = $projects; actions = $actions; warnings = @($warnings.ToArray()) }
 $outputDirectory = Split-Path -Parent $OutputPath
 if (-not (Test-Path -LiteralPath $outputDirectory)) { New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null }
 $utf8 = New-Object System.Text.UTF8Encoding($false)
@@ -307,13 +307,13 @@ $utf8 = New-Object System.Text.UTF8Encoding($false)
 
 # The report is regenerated along with the snapshot and documents the precise denominators.
 $report = New-Object 'System.Collections.Generic.List[string]'
-$report.Add('# Evidencia de extracción XLSX — 2026-11-02')
+$report.Add('# Evidencia de extracción XLSX — iteración 3 · 2026-11-03')
 $report.Add('')
 $report.Add('Reproducir desde la raíz: `& .\prototype\extract-data.ps1`. Si la política de ejecución impide scripts, informar el bloqueo sin modificarla. PowerShell ZIP/XML y .NET, sin Python, módulos externos ni Excel instalado. Lee archivos en modo ZIP read-only. Salida UTF-8 sin BOM. Fecha de snapshot fijada por contrato; no es una fecha inferida de los datos.')
 $report.Add('')
 $report.Add('## Validaciones y cobertura')
 $report.Add('')
-$report.Add('- 8 cuentas; 9 fuentes nuevas seleccionadas exclusivamente por F1=Indicador; 23 indicadores por fuente (207 filas). 11 proyectos representados: 9 con METH NUEVO y FedPat PNC/PC sin fuente nueva. Catálogo: 3 capacidades, 8 criterios, 23 indicadores. Primera fuente CHUB define el catálogo; las diferencias semánticas se advierten, no se normalizan silenciosamente.')
+$report.Add('- 8 cuentas con XLSX y 9 fuentes nuevas seleccionadas por F1=Indicador; 23 indicadores por fuente (207 filas). La demo representa 11 cuentas y 12 proyectos: nueve con METH nuevo y Galicia, Santander y Master Bapro pendientes, sin archivo ni puntuaciones. FedPat PNC/PC se excluyen por solicitud del usuario, sin modificar el XLSX. Catálogo: 3 capacidades, 8 criterios, 23 indicadores. Primera fuente CHUB define el catálogo; diferencias semánticas se advierten, no se normalizan silenciosamente.')
 $report.Add('- 12 acciones (filas 2–13, incluida 39777); 0 URLs inventadas. Relaciones proposed/suggested, nunca confirmed. RR/Run Run quedan sin proyecto asociado.')
 $report.Add('- values sólo contiene meses presentes en cabecera. Números reales (Double.Parse/TryParse InvariantCulture), N/A literal, vacío null; no forward-fill, no cero imputado. Columnas sin mes no entran en cálculos; M/Jorge de MARS se excluye íntegramente.')
 $report.Add('- El agregado mensual es provisional por mes calendario, no un histórico interanual fiable: sólo RIG y TecPlata tienen año confirmado por fechas seriales. Los demás NO tienen año confirmado, incluso si el filename menciona un año.')
@@ -332,7 +332,7 @@ foreach ($project in $projects) {
     $report.Add('| ' + $project.account + ' · ' + $project.name + ' | ' + $periodText + ' | ' + $numeric + ' | ' + $na + ' | ' + $blank + ' | ' + $coverage + ' |')
 }
 $report.Add('')
-$report.Add('Total de celdas con cabecera de mes: ' + $totalSlots + '; numéricas: ' + $totalNumeric + '; N/A: ' + $totalNa + '; vacías: ' + $totalBlank + '. Sobre universo fijo 9 fuentes × 23 indicadores × 5 meses = 1035 celdas, los meses sin columna representan ' + (1035 - $totalSlots) + ' celdas no disponibles, no valores null observados. PNC/PC quedan fuera de este denominador por ausencia de fuente nueva.')
+$report.Add('Total de celdas con cabecera de mes: ' + $totalSlots + '; numéricas: ' + $totalNumeric + '; N/A: ' + $totalNa + '; vacías: ' + $totalBlank + '. Sobre universo fijo 9 fuentes × 23 indicadores × 5 meses = 1035 celdas, los meses sin columna representan ' + (1035 - $totalSlots) + ' celdas no disponibles, no valores null observados. Galicia, Santander y Master Bapro quedan fuera de este denominador por ausencia de fuente y evaluación.')
 $report.Add('')
 $report.Add('### Cobertura por mes calendario')
 $report.Add('')

@@ -20,12 +20,18 @@ function test(name,fn){fn();checks++;console.log('PASS '+name);}
 function near(actual,expected){assert.ok(Math.abs(actual-expected)<1e-8,actual+' != '+expected);}
 const avg=values=>values.length?values.reduce((a,b)=>a+b,0)/values.length:null;
 function independent(project,cap,month){return avg(project.rows.filter(r=>r.capId===cap).map(r=>typeof r.values[month]==='number'&&r.values[month]>=0&&r.values[month]<=r.max?r.values[month]/r.max*100:null).filter(v=>v!==null));}
-test('8 accounts, 9 new source projects and 2 FedPat absences',()=>{
- assert.equal(new Set(snapshot.projects.map(p=>p.account)).size,8);
+test('12 projects: nine sources plus Galicia, Santander and Master Bapro without evaluation',()=>{
+ assert.equal(new Set(snapshot.projects.map(p=>p.account)).size,11);
  assert.equal(snapshot.projects.filter(p=>p.hasNew).length,9);
- assert.equal(snapshot.projects.length,11);
+ assert.equal(snapshot.projects.length,12);
  for(const p of snapshot.projects.filter(p=>p.hasNew)) assert.equal(p.rows.length,23);
- for(const id of ['fedpat-pnc','fedpat-pc']) assert.equal(snapshot.projects.find(p=>p.id===id).hasNew,false);
+ for(const id of ['fedpat-pnc','fedpat-pc']) assert.ok(!snapshot.projects.some(p=>p.id===id));
+ for(const id of ['galicia','santander','master-bapro']) {
+  const p=snapshot.projects.find(p=>p.id===id);
+  assert.ok(p);assert.equal(p.hasNew,false);assert.equal(p.file,null);assert.equal(p.sheet,null);
+  assert.equal(p.rows.length,0);assert.equal(p.periodSources.length,0);
+  for(const month of snapshot.months) assert.equal(model.summarize(id,month.id).global,null);
+ }
 });
 test('12 actual actions; IDs unique; only suggested initial links',()=>{
  assert.equal(snapshot.actions.length,12);
@@ -47,7 +53,7 @@ test('Dates preserved; unknown years not inferred from filenames; Jorge excluded
  assert.ok(mars.periodSources.every(s=>!s.yearConfirmed));
  assert.ok(mars.periodSources.every(s=>s.header!=='Jorge'));
 });
-test('All 165 project-capacity-month averages match independent calculation',()=>{
+test('All 180 project-capacity-month averages match independent calculation',()=>{
  for(const month of snapshot.months) for(const project of snapshot.projects) for(const cap of snapshot.capacities){
   const expected=independent(project,cap.id,month.id);
   const actual=model.summarize(project.id,month.id).capacities.find(c=>c.id===cap.id).avg;
@@ -58,7 +64,7 @@ test('Macro gives equal weight to valid projects, not indicator count',()=>{
  for(const month of snapshot.months) for(const cap of snapshot.capacities){
   const values=snapshot.projects.map(p=>independent(p,cap.id,month.id)).filter(v=>v!==null);
   const expected=avg(values),actual=model.summaries(month.id,'all').capacities.find(c=>c.id===cap.id);
-  assert.equal(actual.total,11);assert.equal(actual.valid,values.length);
+  assert.equal(actual.total,12);assert.equal(actual.valid,values.length);
   if(expected===null)assert.equal(actual.avg,null);else near(actual.avg,expected);
  }
 });
@@ -95,6 +101,38 @@ test('Indicator display filters do not change aggregate computations',()=>{
  const before=JSON.stringify(model.summaries());
  model.setState({indicatorFilter:'red'});assert.equal(JSON.stringify(model.summaries()),before);
  model.setState({indicatorFilter:'all'});
+});
+test('Active project quantities are independent of unconfirmed indicator links and month',()=>{
+ for(const [id,count] of [['fedpat-mars',1],['medife-portal',4],['rig-website',3],['fedpat-crm',0],['galicia',0],['santander',0],['master-bapro',0]]) assert.equal(model.projectActions(id).activeCount,count);
+ assert.equal(model.actionSummary().activeCount,10);assert.equal(model.actionSummary().scopedActiveCount,8);assert.equal(model.actionSummary().unassignedActiveCount,2);
+ model.setState({month:'11'});assert.equal(model.projectActions('fedpat-mars').activeCount,1);
+ const a=model.getActions().find(a=>a.id==='39272');a.links.forEach((_,index)=>model.confirmLink('39272',index));
+ assert.equal(model.projectActions('medife-portal').activeCount,4);
+ model.setStatus('39272','Done');assert.equal(model.projectActions('medife-portal').activeCount,3);
+ model.reset();model.setState({month:'09'});
+});
+test('Real CRM/MARS comparison aligns the nine capacity-one indicators',()=>{
+ model.setState({capId:1,comparisonIds:['fedpat-crm','fedpat-mars'],indicatorFilter:'all',month:'09',account:'all'});
+ const c=model.getComparison();assert.ok(c);assert.equal(c.rows.length,9);
+ assert.deepEqual(Array.from(c.rows,r=>r.indicator.id),[1,2,3,4,5,6,7,8,9]);
+ assert.deepEqual(Array.from(c.rows[0].values,v=>v.raw),[1,2]);
+ near(c.projects[0].capacity.avg,18.51851851851852);near(c.projects[1].capacity.avg,57.407407407407405);
+ model.setState({indicatorFilter:'red'});assert.equal(model.getComparison().rows.length,9);
+ model.setState({comparisonIds:['fedpat-mars','galicia'],indicatorFilter:'all'});
+ assert.ok(model.getComparison().rows.every(r=>r.values[1].score===null&&r.values[1].raw===null));
+ assert.equal(model.getComparison().projects[1].capacity.avg,null);
+ assert.equal(model.toggleComparison('santander'),false);assert.equal(model.getState().comparisonIds.length,2);
+ model.setState({account:'FedPat'});assert.deepEqual(Array.from(model.getState().comparisonIds),['fedpat-mars']);assert.equal(model.getComparison(),null);
+ model.setState({account:'all',comparisonIds:[],capId:null,indicatorFilter:'all'});
+});
+test('Departmental pies retain real values and pending-only scopes have no percent',()=>{
+ const c=model.summaries('09','all').capacities[0];const chart=model.chartGeometry(c.avg);
+ near(chart.value,56.646825396825406);near(chart.remaining,43.353174603174594);
+ assert.ok(chart.path&&!chart.path.includes('NaN'));
+ for(const account of ['Galicia','Santander','Master Bapro']){
+  const absent=model.summaries('09',account).capacities[0];assert.equal(absent.avg,null);
+  assert.equal(model.chartGeometry(absent.avg).kind,'empty');assert.equal(model.chartGeometry(absent.avg).remaining,null);
+ }
 });
 console.log('\n'+checks+' real-data checks PASS.');
 console.log('September departmental capacities (mean of project means):');

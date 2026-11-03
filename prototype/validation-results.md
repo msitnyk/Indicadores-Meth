@@ -1,35 +1,45 @@
-# Verificación del prototipo — Iteración 2 · 2026-11-02
+# Verificación del prototipo — Iteración 3 · 2026-11-03
 
-**Resultado técnico: PASS en cálculos, estructura y recorrido DOM probado.** No equivale a validación de uso, revisión visual completa ni producto listo para publicar.
+**Resultado técnico: PASS** en estructura, reglas, datos reales, comparación y preparación de impresión. No equivale a validación de uso ni aplicación lista para publicar.
 
 | Verificación | Resultado |
 |---|---|
-| `node prototype/build-prototype.cjs` | HTML preparado con 11 proyectos, 12 acciones; 120.235 bytes. |
-| `node prototype/verify-prototype.cjs` | 23 PASS: estructura, tokens, rutas, inyección segura, promedios, cobertura, vínculos y estados. |
-| `node prototype/verify-real-data.cjs` | 11 PASS: instantánea, 165 combinaciones proyecto/capacidad/mes, reglas y acciones reales. |
-| Fuentes | 9 hashes SHA-256 de XLSX coinciden con el informe de extracción; ningún archivo fuente modificado. |
-| Navegador DOM | 20 comprobaciones PASS sobre filtros, navegación, ficha, evolución, acciones y confirmación explícita. |
-| Router accesible | Cinco rutas: una pantalla visible, foco en encabezado y `aria-current` correcto. |
-| Contraste de texto | Siete pares principales ≥4,5:1, mínimo observado 5,59:1; no auditoría exhaustiva de accesibilidad. |
-| Fuente y simulación | Links iniciales restaurados como sugeridos; ninguna modificación de Excel/Redmine. |
-| Sintaxis del extractor | Parser PowerShell: 0 errores, sin ejecutar ni alterar política. |
+| Preparación del HTML | 12 proyectos y 12 acciones incrustados; 138.596 bytes. Abre offline sin scripts auxiliares. |
+| `node prototype/verify-prototype.cjs` | **31 PASS**: reglas, cantidad de acciones, comparación, tortas, PDF, estructura e inyección segura. |
+| `node prototype/verify-real-data.cjs` | **14 PASS**: roster, datos reales, 180 combinaciones proyecto–capacidad–mes y conservación del piloto. |
+| Recorrido de navegador | **18 comprobaciones DOM PASS** de nuevas funciones; prueba final adicional de seis rutas, PDF limpio, controles, estado restaurado y ancho de página. |
+| Fuentes | Nueve hashes SHA-256 de XLSX sin diferencias. Catálogo, nueve proyectos evaluados y doce acciones idénticos a Git HEAD anterior. |
+| Revisión visual | Capturas de escritorio del panorama y comparación CRM/MARS; selección real mediante casillas y botón de comparar probada. |
+| PDF | Copia de la vista activa probada, sin controles ni IDs duplicados; mantiene gráficos, proyectos, mes y advertencias. |
+| Extractor | Sintaxis PowerShell válida sin ejecutar ni alterar política. Generador actualizado para el nuevo roster. |
 
-## Recorrido DOM verificado
+## Red → Green observado
 
-- Panorama: tres capacidades, once proyectos, cobertura nueve de once en septiembre.
-- Búsqueda sin coincidencias no cambia el agregado. Alcance por cuenta sí cambia el macro.
-- Noviembre vacío no arrastra septiembre ni genera verdes.
-- Tarjeta de capacidad → criterios agregados y once aportes → MARS con capacidad destacada.
-- Ficha: tres capacidades, ocho criterios, cuatro rojos de MARS al filtrar, promedio sin alteración y cinco meses visibles.
-- Acción #39883: abrir candidato no confirma; confirmar sí aumenta cobertura; elegir estado sin guardar no cambia nada; simular Done elimina cobertura, manteniendo el puntaje.
-- Lista de doce acciones conserva orígenes sin correspondencia. Vínculo manual requiere botón; no cambia el origen de fuente.
-- Restablecer recupera estados y sugerencias originales. Al quitar contexto se recupera foco visible; se corrigió un defecto encontrado en revisión.
-- Acción Cancelled #39270 permanece visible sin cobertura, comprobada también en las pruebas sobre datos reales.
+- Se actualizó primero la prueba del roster: falló con **8 !== 11** cuentas representadas antes de modificar la instantánea.
+- Las pruebas de funciones nuevas fallaron con **`m.projectActions is not a function`** antes de implementarlas.
+- Tras la implementación e inyección, las 45 pruebas de los dos verificadores pasan, incluida la regresión de textos «Ver en paralelo».
+- Una comprobación DOM del PDF de acciones se ajustó para sincronizar la ruta antes de clonar y comparar textos sin dependencia de mayúsculas; luego confirmó doce items con estados fuente/demo.
 
-## Limitaciones y bloqueos
+## Comportamientos comprobados
 
-1. La ventana del navegador no estaba visible: screenshot y clic mediante coordenadas fallaron. No se insistió ni se alteró la seguridad. Se comprobó el DOM con eventos programáticos, sin afirmar prueba de puntero ni revisión visual completa. Pendiente dispositivo móvil físico.
-2. Años de meses textuales no confirmados: el consolidado es nominal/provisional.
-3. Relaciones acción–indicador sugeridas y orígenes RR/Run Run sin resolver; no se confirman automáticamente.
-4. Reextracción mediante `extract-data.ps1` bloqueada por política PowerShell (`PSSecurityException`). No se modificó la política. Los valores extraídos previamente y la construcción/verificación del HTML con Node sí funcionan.
-5. No hay publicación, permisos, persistencia, edición de puntuaciones ni integración real de tickets. Los cambios de acciones son una demostración local.
+- PNC/PC ausentes del roster de la demo, sin cambiar el Excel.
+- Galicia, Santander y Master Bapro sin fuente ni puntajes; nueve proyectos aportan al macro de doce representados.
+- Tortas con dos sectores de cumplimiento/restante. Geometrías 0 %, 100 % y ausencia válidas; ausencia no genera 0 %.
+- Cantidad activa por proyecto sin vínculo confirmado: MARS 1, Medifé 4, RIG 3. Archivo: diez activas, dos sin proyecto identificado.
+- Una acción con varias sugerencias se cuenta una vez. Done/Cancelled no cuentan como activas. Simular un estado no modifica el puntaje.
+- Selección de exactamente dos proyectos, tercer intento rechazado sin reemplazar, foco conservado y poda por alcance.
+- CRM/MARS alineados en los nueve indicadores de capacidad 1; los filtros usan la unión de alertas y no recalculan promedios.
+- Comparación con un proyecto pendiente y cambio de mes conservan «Sin evaluación», sin arrastre.
+- PDF del panorama conserva tres gráficos y nombres de proyectos. PDF comparativo conserva ambos proyectos y nueve filas; copia expandida sin abrir los detalles originales.
+- PDF de acciones conserva doce items y estados de fuente versus simulación, sin formularios de edición.
+- Se retiraron comandos de navegación de la copia imprimible, conservando etiquetas reales de proyectos.
+- Las simulaciones fueron restablecidas; fuente y puntuaciones permanecen inmutables.
+
+## Límites y pendientes
+
+1. **PDF nativo:** se comprobó la preparación del informe y la invocación de impresión con `window.print` sustituido por un contador durante la automatización. No se afirma un PDF guardado ni se verificó exhaustivamente su paginación. La persona debe elegir **Guardar como PDF**, nombre y destino en el diálogo del navegador.
+2. **Móvil:** adaptación CSS presente; no se probó en dispositivo físico.
+3. **Período:** años de meses textuales aún no confirmados; macro nominal/provisional.
+4. **Acciones:** cantidad no demuestra cobertura ni efectividad; correspondencias por nombre y sugerencias múltiples requieren revisión. RR y Run Run 5 siguen pendientes.
+5. **Extracción:** política PowerShell bloquea la ejecución estándar del extractor; no se cambió. La instantánea mantenida y la preparación/verificación con Node funcionan.
+6. **Producto:** sin publicación, autenticación, persistencia, creación real de tickets ni modificación de evaluaciones. No se agregaron dependencias ni se realizaron commits.
